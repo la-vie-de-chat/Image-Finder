@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Image Finder</title>
+
+    <!--    formatting -->
+    <link href="css/formats.css" rel="stylesheet">
+
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+
+
+</head>
+<script>
+    window.addEventListener('load', function () {
+        var resultList = document.querySelector('ul.results');
+        var urlInput = document.querySelector('input[name=url]')
+
+        apiCallBack = function (xhr, callback) {
+            if (xhr.readyState == XMLHttpRequest.DONE) {
+                if (xhr.status != 200) {
+                    let message = xhr.status + ":" + xhr.statusText + ":"
+                        + xhr.responseText;
+                    alert(message);
+                    throw 'API call returned bad code: ' + xhr.status;
+                }
+                let response = xhr.responseText ? JSON.parse(xhr.responseText)
+                    : null;
+                if (callback) {
+                    callback(response);
+                }
+            }
+        }
+
+        updateList = function (response) {
+            document.getElementById("scraping").style.color = "#2AD91EFF";
+            document.getElementById("scraping").innerHTML = "Finished!".bold();
+            resultList.innerHTML = '';
+            for (var i = 0; i < response.length; i++) {
+                    var img = document.createElement("img");
+                    img.width = 200;
+                    img.src = response[i];
+                    resultList.appendChild(img);
+            }
+        }
+
+        makeApiCall = function (url, method, obj, callback) {
+            let xhr = new XMLHttpRequest();
+            xhr.open(method, url);
+            xhr.onreadystatechange = apiCallBack.bind(null, xhr, callback);
+            xhr.send(obj ? obj instanceof FormData || obj.constructor == String ? obj : JSON.stringify(obj) : null);
+        }
+
+        document.querySelector('button').addEventListener("click", function (event) {
+            event.preventDefault();
+            document.getElementById("scraping").style.color = "#ffffff"
+            document.getElementById("scraping").innerHTML = "Scraping...Please Wait".bold();
+            makeApiCall('/main?url=' + urlInput.value, 'POST', null, updateList);
+        })
+    })
+</script>
+
+	<!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="header-content-inner">
+                <h1>Image Finder</h1>
+                <p>(Please use this format: https://www.xxxx.com)
+                    <div class="input">
+                     <span style="color: black; ">
+                         <form><input type="text" name="url"></form>
+                     </span>
+                         <p id="scraping"> </p>
+                        <button type="button" class="button">Submit!</button>
+                    </div>
+            </div>
+        </div>
+    </header>
+
+    <content>
+        </div>
+        <div class="output">
+            <ul class="results">
+            </ul>
+        </div>
+    </content>
+
+</html>
